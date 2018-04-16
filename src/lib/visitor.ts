@@ -44,36 +44,41 @@ export class PGVisitor extends Visitor{
 		context.identifier = node.value.name;
 	}
 
-	protected VisitEqualsExpression(node:Token, context:any){
-		this.Visit(node.value.left, context);
-		this.where += " = ";
-		this.Visit(node.value.right, context);
-		if (this.options.useParameters && context.literal == null){
-			this.where = this.where.replace(/= \?$/, "IS NULL").replace(new RegExp(`\\? = "${context.identifier}"$`), `"${context.identifier}" IS NULL`);
-		}else if (context.literal == "NULL"){
-			this.where = this.where.replace(/= NULL$/, "IS NULL").replace(new RegExp(`NULL = "${context.identifier}"$`), `"${context.identifier}" IS NULL`);
-		}
-	}
+    protected VisitEqualsExpression(node:Token, context:any){
+        this.Visit(node.value.left, context);
+        this.where += " = ";
+        this.Visit(node.value.right, context);
+        if (this.options.useParameters && context.literal == null){
+            this.where = this.where.replace(/= \$\d*$/, "IS NULL")
+                .replace(new RegExp(`\\$\\d* = "${context.identifier}"$`), `"${context.identifier}" IS NULL`);
+        }else if (context.literal == "NULL"){
+            this.where = this.where.replace(/= NULL$/, "IS NULL").replace(new RegExp(`NULL = "${context.identifier}"$`), `"${context.identifier}" IS NULL`);
+        }
+    }
 
-	protected VisitNotEqualsExpression(node:Token, context:any){
-		this.Visit(node.value.left, context);
-		this.where += " <> ";
-		this.Visit(node.value.right, context);
-		if (this.options.useParameters && context.literal == null){
-			this.where = this.where.replace(/<> \?$/, "IS NOT NULL").replace(new RegExp(`\\? <> "${context.identifier}"$`), `"${context.identifier}" IS NOT NULL`);
-		}else if (context.literal == "NULL"){
-			this.where = this.where.replace(/<> NULL$/, "IS NOT NULL").replace(new RegExp(`NULL <> "${context.identifier}"$`), `"${context.identifier}" IS NOT NULL`);
-		}
-	}
+    protected VisitNotEqualsExpression(node:Token, context:any){
+        this.Visit(node.value.left, context);
+        this.where += " <> ";
+        this.Visit(node.value.right, context);
+        if (this.options.useParameters && context.literal == null){
+            this.where = this.where.replace(/<> \$\d*$/, "IS NOT NULL")
+                .replace(new RegExp(`\\$\\d* <> "${context.identifier}"$`), `"${context.identifier}" IS NOT NULL`);
+        }else if (context.literal == "NULL"){
+            this.where = this.where.replace(/<> NULL$/, "IS NOT NULL").replace(new RegExp(`NULL <> "${context.identifier}"$`), `"${context.identifier}" IS NOT NULL`);
+        }
+    }
 
-	protected VisitLiteral(node:Token, context:any){
-		if (this.options.useParameters){
-			let value = Literal.convert(node.value, node.raw);
-			context.literal = value;
-			this.parameters.push(value);
-			this.where += `\$${this.parameters.length}`;
-		}else this.where += (context.literal = SQLLiteral.convert(node.value, node.raw));
-	}
+    protected VisitLiteral(node:Token, context:any){
+        if (this.options.useParameters){
+            let value = Literal.convert(node.value, node.raw);
+            context.literal = value;
+            if (context.literal != null) {
+                this.parameters.push(value);
+            }
+            this.where += `\$${this.parameters.length}`;
+
+        }else this.where += (context.literal = SQLLiteral.convert(node.value, node.raw));
+    }
 
 	protected VisitMethodCallExpression(node:Token, context:any){
 		var method = node.value.method;
