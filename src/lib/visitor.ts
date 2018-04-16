@@ -62,7 +62,7 @@ export class PGVisitor extends Visitor{
 		this.where += " <> ";
 		this.Visit(node.value.right, context);
 		if (this.options.useParameters && context.literal == null){
-            this.where = this.where.replace(/<> \$\d*$/, "IS NOT NULL")
+		    this.where = this.where.replace(/<> \$\d*$/, "IS NOT NULL")
                 .replace(new RegExp(`\\$\\d* <> "${context.identifier}"$`),
                     `"${context.identifier}" IS NOT NULL`);
 		} else if (context.literal == "NULL"){
@@ -78,7 +78,7 @@ export class PGVisitor extends Visitor{
 			    this.parameters.push(value);
 			}
 			this.where += `\$${this.parameters.length}`;
-		}else this.where += (context.literal = SQLLiteral.convert(node.value, node.raw));
+		} else this.where += (context.literal = SQLLiteral.convert(node.value, node.raw));
 	}
 
 	protected VisitMethodCallExpression(node:Token, context:any){
