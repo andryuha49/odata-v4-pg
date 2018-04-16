@@ -75,8 +75,8 @@ export class PGVisitor extends Visitor{
 			let value = Literal.convert(node.value, node.raw);
 			context.literal = value;
 			if (context.literal != null) {
-                this.parameters.push(value);
-            }
+			    this.parameters.push(value);
+			}
 			this.where += `\$${this.parameters.length}`;
 		}else this.where += (context.literal = SQLLiteral.convert(node.value, node.raw));
 	}
